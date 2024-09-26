@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="5">
+    <PathDelim Value="\"/>
+    <Name Value="IteratorPkg"/>
+    <Type Value="RunAndDesignTime"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <OtherUnitFiles Value="src\iterators;src\tuple;src\helpers"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Files>
+      <Item>
+        <Filename Value="src\tuple\tupletypes.pas"/>
+        <UnitName Value="tupletypes"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.pas"/>
+        <UnitName Value="iterators"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.base.pas"/>
+        <UnitName Value="iterators.base"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.map.pas"/>
+        <UnitName Value="iterators.map"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.filter.pas"/>
+        <UnitName Value="iterators.filter"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.take.pas"/>
+        <UnitName Value="iterators.take"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.skip.pas"/>
+        <UnitName Value="iterators.skip"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.typing.pas"/>
+        <UnitName Value="iterators.typing"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.helper.pas"/>
+        <UnitName Value="iterators.helper"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.collector.pas"/>
+        <UnitName Value="iterators.collector"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.ordering.pas"/>
+        <UnitName Value="iterators.ordering"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.strings.pas"/>
+        <UnitName Value="iterators.strings"/>
+      </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.expand.pas"/>
+        <UnitName Value="iterators.expand"/>
+      </Item>
+      <Item>
+        <Filename Value="src\helpers\finalizers.pas"/>
+        <UnitName Value="finalizers"/>
+      </Item>
+      <Item>
+        <Filename Value="src\helpers\functypes.pas"/>
+        <UnitName Value="FuncTypes"/>
+      </Item>
+    </Files>
+    <RequiredPkgs>
+      <Item>
+        <PackageName Value="FCL"/>
+      </Item>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
