@@ -66,6 +66,10 @@
         <UnitName Value="iterators.expand"/>
       </Item>
       <Item>
+        <Filename Value="src\iterators\iterators.range.pas"/>
+        <UnitName Value="Iterators.Range"/>
+      </Item>
+      <Item>
         <Filename Value="src\helpers\finalizers.pas"/>
         <UnitName Value="finalizers"/>
       </Item>

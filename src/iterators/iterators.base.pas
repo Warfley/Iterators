@@ -1,6 +1,7 @@
 unit iterators.base;
 
 {$mode ObjFPC}{$H+}
+{$ModeSwitch advancedrecords}
 
 interface
 
@@ -102,6 +103,26 @@ type
 
     function GetCurrent: T; override;
     function MoveNext: Boolean; override;
+  end;
+
+  { TIteratorCombinator }
+
+  generic TIteratorCombinator<T, TSource> = record
+  public type
+    TSelfType = specialize TIteratorCombinator<T, TSource>;
+    TIteratorType = specialize TIteratorIterator<T, TSource>;
+    IIteratorType = specialize IIterator<T>;
+    ICombineIterator = specialize IIterator<TSource>;
+  private
+    FIterator: IIteratorType;
+  public
+    function Combine(AIterator: ICombineIterator): IIteratorType;
+
+    class function Create(AIterator: TIteratorType): TSelfType; static;
+
+    class operator :=(AIterator: TIteratorType): TSelfType; inline;
+    class operator <(var ACombinator: TSelfType; AIterator: ICombineIterator): IIteratorType; inline;
+    class operator >(var AIterator: ICombineIterator; ACombinator: TSelfType): IIteratorType; inline;
   end;
 
 implementation
@@ -237,6 +258,43 @@ function TArrayIterator.MoveNext: Boolean;
 begin
   Inc(FHead);
   Result := FHead <= High(FData);
+end;
+
+{ TIteratorCombinator }
+
+function TIteratorCombinator.Combine(AIterator: ICombineIterator
+  ): IIteratorType;
+begin
+  if not Assigned(FIterator) then
+    raise EInvalidPointer.Create('Invalid Combinator');
+  (FIterator as TIteratorType).FIterator:=AIterator;
+  Result := FIterator;
+  // Cannot combine multiple times
+  FIterator := nil;
+end;
+
+class function TIteratorCombinator.Create(AIterator: TIteratorType): TSelfType;
+begin
+  AIterator.FIterator := nil;
+  Result.FIterator := AIterator;
+end;
+
+class operator TIteratorCombinator.:=(AIterator: TIteratorType): TSelfType;
+begin            
+  AIterator.FIterator := nil;
+  Result.FIterator := AIterator;
+end;
+
+class operator TIteratorCombinator.<(var ACombinator: TSelfType;
+  AIterator: ICombineIterator): IIteratorType;
+begin
+  Result := ACombinator.Combine(AIterator);
+end;
+
+class operator TIteratorCombinator.>(var AIterator: ICombineIterator;
+  ACombinator: TSelfType): IIteratorType;
+begin
+  Result := ACombinator.Combine(AIterator);
 end;
 
 end.

@@ -10,7 +10,7 @@ uses
 
   iterators.base, iterators.map, iterators.filter, iterators.take,
   iterators.skip, iterators.typing, iterators.ordering, iterators.helper,
-  iterators.collector, iterators.strings, iterators.expand,
+  iterators.collector, iterators.strings, iterators.expand, iterators.Range,
 
   Generics.Collections, TupleTypes, Nullable;
 
@@ -27,12 +27,15 @@ generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>)
 // Classic pascal containers
 function Iterate(const AStrings: TStrings): specialize IIterator<String>; overload; inline;
 function Iterate(const AList: Classes.TList): specialize IIterator<Pointer>; overload; inline;
-// String interators
+// String iterators
 function Split(const AString: String; const ADelimiter: String): specialize IIterator<String>; overload; inline;
 function Split(AIterator: specialize IIterator<Char>; const ADelimiter: String): specialize IIterator<String>; overload; inline;
 function InBetween(AIterator: specialize IIterator<Char>; const AStart, AEnd: String): specialize IIterator<String>; overload; inline;
 function IterateUTF8(const AString: String): specialize IIterator<String>; inline; overload;
 function IterateUTF8(const AIterator: specialize IIterator<Char>): specialize IIterator<String>; inline; overload;
+// Range iterators
+generic function IterateRange<T>(const AStart, AStop: T): specialize IIterator<T>; inline; overload;
+generic function IterateRange<T>(const AStart, AStop, AStep: T): specialize IIterator<T>; inline; overload;
 
 // Map functions
 generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
@@ -325,6 +328,16 @@ end;
 function IterateUTF8(const AIterator: specialize IIterator<Char>): specialize IIterator<String>;
 begin
   Result := TUTF8AggregateIterator.Create(AIterator);
+end;
+
+generic function IterateRange<T>(const AStart, AStop: T): specialize IIterator<T>;
+begin
+  Result := specialize TRangeIterator<T>.Create(AStart, AStop);
+end;
+
+generic function IterateRange<T>(const AStart, AStop, AStep: T): specialize IIterator<T>;
+begin
+  Result := specialize TStepRangeIterator<T>.Create(AStart, AStop, AStep);
 end;
 
 { Map Functions }

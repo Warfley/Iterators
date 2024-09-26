@@ -22,7 +22,27 @@ begin
   for i in Iterate<Integer>(Data) do
     Write(' ', i);
   WriteLn;
-end;    
+end;
+
+procedure IterateRangeTest;
+var
+  i: Integer;
+begin
+  Write('Testing Iterate over Range [0..10]:');
+  for i in IterateRange<Integer>(0, 10) do
+    Write(' ', i);
+  WriteLn;
+end; 
+
+procedure IterateRangeStepTest;
+var
+  d: Double;
+begin
+  Write('Testing Iterate over Range [0..10] in steps of 0.5:');
+  for d in IterateRange<Double>(0, 10, 0.5) do
+    Write(' ', FloatToStr(d));
+  WriteLn;
+end;
 
 procedure IterateCharsTest;
 const
@@ -698,7 +718,9 @@ begin
   SetTextCodePage(Output, DefaultSystemCodePage);
 
   // Base iterators
-  IterateArrayTest; 
+  IterateArrayTest;
+  IterateRangeTest;
+  IterateRangeStepTest;
   IterateCharsTest;
   IterateStringListTest;
   IterateListTest;
