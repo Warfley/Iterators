@@ -135,6 +135,29 @@ begin
   WriteLn;
 end;
 
+procedure IteratorCombinatorTest;
+
+function sq(a: Integer): Integer;
+begin
+  Result := a*a;
+end;
+
+function isEven(a: Integer): Boolean;
+begin
+  Result := a mod 2 = 0;
+end;
+    
+var
+  i: Integer;
+begin
+  Write('Testing Iterator Combination Map < Filter < Range 0..10:');
+  for i in Map<Integer, Integer>(sq,
+           Filter<Integer>(isEven,
+           IterateRange<Integer>(0, 10))) do
+     Write(' ', i);
+  WriteLn;
+end;
+
 procedure IndexTest;
 var
   p: TPair<SizeInt, Integer>;
@@ -155,7 +178,7 @@ var
   i: Integer;
 begin
   Write('Testing Step 3:');
-  for i in Step<Integer>(Iterate<Integer>(Data), 3) do
+  for i in Step<Integer>(3, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -176,7 +199,7 @@ var
   arr: Array of String = ['Banana', 'Apple', 'Cherry'];
 begin
   Write('Testing Sort Banana, Apple, Cherry:');
-  for s in Sorted<String>(Iterate<String>(arr), CompareStr) do
+  for s in Sorted<String>(CompareStr, Iterate<String>(arr)) do
     Write(' ', s);
   WriteLn;
 end;
@@ -191,7 +214,7 @@ var
   i: Integer;
 begin
   Write('Testing Filter isEven:');
-  for i in Filter<Integer>(Iterate<Integer>(Data), isEven) do
+  for i in Filter<Integer>(isEven, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -207,7 +230,7 @@ begin
 end;
 begin
   Write('Testing Map inttohex:');
-  for s in Map<Integer, String>(Iterate<Integer>(Data), Int2Hex) do
+  for s in Map<Integer, String>(Int2Hex, Iterate<Integer>(Data)) do
     Write(' ', s);
   WriteLn;
 end;
@@ -217,7 +240,7 @@ var
   i: Integer;
 begin
   Write('Testing Skip 4:');
-  for i in Skip<Integer>(Iterate<Integer>(Data), 4) do
+  for i in Skip<Integer>(4, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -227,7 +250,7 @@ var
   i: Integer;
 begin
   Write('Testing Take 4:');
-  for i in Take<Integer>(Iterate<Integer>(Data), 4) do
+  for i in Take<Integer>(4, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -239,7 +262,7 @@ var
   c: Char;
 begin
   Write('Testing TakeUntil (excluding) aabb in "' + TestString + '":');
-  for c in TakeUntil(Iterate(TestString), 'aabb') do
+  for c in TakeUntil('aabb', Iterate(TestString)) do
     Write(' ', c);
   WriteLn;
 end;
@@ -251,7 +274,7 @@ var
   c: Char;
 begin
   Write('Testing TakeUntil (including) aabb in "' + TestString + '":');
-  for c in TakeUntil(Iterate(TestString), 'aabb', True) do
+  for c in TakeUntil('aabb', Iterate(TestString), True) do
     Write(' ', c);
   WriteLn;
 end;
@@ -263,7 +286,7 @@ var
   c: Char;
 begin
   Write('Testing TakeUntil abcd in "' + TestString + '":');
-  for c in TakeUntil(Iterate(TestString), 'abcd') do
+  for c in TakeUntil('abcd', Iterate(TestString)) do
     Write(' ', c);
   WriteLn;
 end; 
@@ -275,7 +298,7 @@ var
   c: Char;
 begin
   Write('Testing TakeUntil [] in "' + TestString + '":');
-  for c in TakeUntil(Iterate(TestString), '') do
+  for c in TakeUntil('', Iterate(TestString)) do
     Write(' ', c);
   WriteLn;
 end;
@@ -295,7 +318,7 @@ var
   i: Integer;
 begin
   Write('Testing TakeWhile isPrime:');
-  for i in TakeWhile<Integer>(Iterate<Integer>(Data), isPrime) do
+  for i in TakeWhile<Integer>(isPrime, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -305,7 +328,7 @@ var
   i: Integer;
 begin
   Write('Testing SkipWhile isPrime:');
-  for i in SkipWhile<Integer>(Iterate<Integer>(Data), isPrime) do
+  for i in SkipWhile<Integer>(isPrime, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -317,7 +340,7 @@ var
   c: Char;
 begin
   Write('Testing SkipUntil (excluding) aabb in "' + TestString + '":');
-  for c in SkipUntil<Char>(Iterate(TestString), 'aabb') do
+  for c in SkipUntil<Char>('aabb', Iterate(TestString)) do
     Write(' ', c);
   WriteLn;
 end;
@@ -329,7 +352,7 @@ var
   c: Char;
 begin
   Write('Testing SkipUntil (including) aabb in "' + TestString + '":');
-  for c in SkipUntil(Iterate(TestString), 'aabb', True) do
+  for c in SkipUntil('aabb', Iterate(TestString), True) do
     Write(' ', c);
   WriteLn;
 end;
@@ -341,7 +364,7 @@ var
   c: Char;
 begin
   Write('Testing SkipUntil abcd in "' + TestString + '":');
-  for c in SkipUntil(Iterate(TestString), 'abcd') do
+  for c in SkipUntil('abcd', Iterate(TestString)) do
     Write(' ', c);
   WriteLn;
 end;
@@ -353,7 +376,7 @@ var
   c: Char;
 begin
   Write('Testing SkipUntil [] in "' + TestString + '":');
-  for c in SkipUntil(Iterate(TestString), '') do
+  for c in SkipUntil('', Iterate(TestString)) do
     Write(' ', c);
   WriteLn;
 end;
@@ -369,7 +392,7 @@ var
   i: Integer;
 begin
   Write('Testing double expand:');
-  for i in Expand<Integer, Integer>(Iterate<Integer>(Data), DoubleExpand) do
+  for i in Expand<Integer, Integer>(DoubleExpand, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -411,7 +434,7 @@ end;
 
 begin
   Write('Testing Reduce Add: ');
-  sum := Reduce<Integer>(Iterate<Integer>(Data), Add);
+  sum := Reduce<Integer>(Add, Iterate<Integer>(Data));
   WriteLn(sum);
 end; 
 
@@ -453,7 +476,9 @@ begin
 end;
 begin
   WriteLn('Teesting Collect as TStringList: ');
-  sl := Collect<String, TStringList>(Map<Integer, String>(Iterate<Integer>(Data), Int2Hex));
+  sl := Collect<String, TStringList>(
+        Map<Integer, String>(Int2Hex,
+        Iterate<Integer>(Data)));
   try
     WriteLn(sl.Text);
   finally
@@ -648,7 +673,7 @@ var
   str: String;
 begin
   Write('Testing split and join "' + DelimitedText + '": ');
-  str := Join(Split(DelimitedText, '/'), '\', False);
+  str := Join('\', Split(DelimitedText, '/'), False);
   WriteLn(str);
 end;
 
@@ -659,7 +684,8 @@ var
   str: String;
 begin
   Write('Testing split and join (geometric)"' + DelimitedText + '": ');
-  str := Join(Split(DelimitedText, '/'), '\');
+  str := Join('\',
+         Split(DelimitedText, '/'));
   WriteLn(str);
 end;
 
@@ -727,6 +753,9 @@ begin
   IterateGenericListTest;
   IterateObjectListTest;
 
+  // Iterator Combinators
+  IteratorCombinatorTest;
+
   // Utility functions
   IndexTest;
   ReverseTest;
@@ -786,6 +815,6 @@ begin
   JoinStringTestSimple;
   JoinStringTestGeometric;
 
-  ReadLn;
+  {$IfDef Windows}ReadLn;{$EndIF}
 end.
 

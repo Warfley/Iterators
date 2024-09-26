@@ -35,7 +35,7 @@ var
   i: Integer;
 begin
   iter := Iterate<Integer>(arr); // create iterator
-  iter := filter(iter, isEven); // filter out odd elements
+  iter := filter(isEven, iter); // filter out odd elements
   for i in iter do
     WriteLn(i);
 ```
@@ -47,9 +47,14 @@ var
   HexStr: String;
 begin
   // Converts each of the bytes to the HEX representation and forms a string by concatinating all of them
-  HexStr := Reduce<String>(Map<Byte, String>(Iterate<Byte>(arr), ByteToHex), ConcatStr);
+  HexStr := Reduce<String>(ConcatStr,
+            Map<Byte, String>(ByteToHex,
+            Iterate<Byte>(arr)));
 end;
 ```
+
+The functions are written in a way that (except default arguments) the last argument will be the iterator, this allows easy reading of the chaining my reading the chain right to left.
+Also it allows, as in the example above, to use newlines to make reading the flow easier (bottom to top).
 
 ## Generating from Container
 To create Iterators for different Container types, does not require rewriting the container to fit this library. All it requires is the implementation of the Iterate function.
@@ -83,7 +88,7 @@ begin
   // external creation (safer):
   lst := TList<Integer>.Create;
   try
-    Collect<Integer, TList<Integer>>(iter, lst);
+    Collect<Integer, TList<Integer>>(lst, iter);
     ...
   finally
     lst.Free;
@@ -96,7 +101,7 @@ begin
     lst.Free;
   end;
   // Combination of the two custom constructors:
-  lst := Collect<Integer, TList<Integer>>(iter, TList<Integer>.Create());
+  lst := Collect<Integer, TList<Integer>>(TList<Integer>.Create(), iter);
   try
     ...
   finally
@@ -124,16 +129,24 @@ An example can be found in `examples/iterator_test/iteratortest_implicit.lpr`.
 
 This feature can be enabled with the modeswitch `{$ModeSwitch ImplicitFunctionSpecialization}` and allows leaving out the specialization syntax:
 ```pascal
-HexStr := Reduce<String>(Map<Byte, String>(Iterate<Byte>(arr), ByteToHex), ConcatStr);
+HexStr := Reduce<String>(ConcatStr,
+          Map<Byte, String>(ByteToHex,
+          Iterate<Byte>(arr)));
 // becomes
-HexStr := Reduce(Map(Iterate(arr), ByteToHex), ConcatStr);
+HexStr := Reduce(ConcatStr,
+          Map(ByteToHex,
+          Iterate(arr)));
 ```
 To ease readability, I would also suggest using `{$Mode Delphi}` rather than objFPC, as it does not require the `specialize` keyword:
 ```pascal
 // Mode Delphi:
-HexStr := Reduce<String>(Map<Byte, String>(Iterate<Byte>(arr), ByteToHex), ConcatStr);
+HexStr := Reduce<String>(ConcatStr,
+          Map<Byte, String>(ByteToHex,
+          Iterate<Byte>(arr)));
 // Mode ObjFPC:
-HexStr := specialize Reduce<String>(specialize Map<Byte, String>(specialize Iterate<Byte>(arr), @ByteToHex), @ConcatStr);
+HexStr := specialize Reduce<String>(@ConcatStr,
+          specialize Map<Byte, String>(@ByteToHex,
+          specialize Iterate<Byte>(arr)));
 ```
 
 ### Efficiency
@@ -143,7 +156,9 @@ This library is designed to trade optimisation for comfort. For the very most ca
 Some operations, like reversing or sorting introduce a rather large overhead as all the data is collected and stored temporarily in the iterators.
 E.g.
 ```pascal
-  arr := CollectArray<String>(Sorted<String>(Iterate<String>(arr), CompareStr));
+  arr := CollectArray<String>(
+         Sorted<String>(CompareStr,
+         Iterate<String>(arr)));
 ```
 Will be less efficient than an in-place sorting algorithm like quick or heapsort on the same array.
 

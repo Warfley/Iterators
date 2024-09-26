@@ -24,11 +24,6 @@
     <RunParams>
       <FormatVersion Value="2"/>
     </RunParams>
-    <RequiredPackages>
-      <Item>
-        <PackageName Value="ObjPasUtils"/>
-      </Item>
-    </RequiredPackages>
     <Units>
       <Unit>
         <Filename Value="iteratortest_implicit.lpr"/>
@@ -43,6 +38,8 @@
       <Filename Value="iteratortest_implicit"/>
     </Target>
     <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="..\..\src\iterators;..\..\src\helpers;..\..\src\tuple"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

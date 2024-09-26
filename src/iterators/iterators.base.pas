@@ -66,6 +66,8 @@ type
     function IteratorCurrent: TSource; inline;
   public
     constructor Create(AIterator: IIteratorType);
+
+    function Source(AIterator: IIteratorType): specialize IIterator<T>;
   end;
 
   { TLookAheadIterator }
@@ -105,6 +107,7 @@ type
     function MoveNext: Boolean; override;
   end;
 
+{  Currently the operator overloading idea doesn't work (why tho?)
   { TIteratorCombinator }
 
   generic TIteratorCombinator<T, TSource> = record
@@ -116,14 +119,15 @@ type
   private
     FIterator: IIteratorType;
   public
-    function Combine(AIterator: ICombineIterator): IIteratorType;
+    function Source(AIterator: ICombineIterator): IIteratorType;
 
     class function Create(AIterator: TIteratorType): TSelfType; static;
 
     class operator :=(AIterator: TIteratorType): TSelfType; inline;
     class operator <(var ACombinator: TSelfType; AIterator: ICombineIterator): IIteratorType; inline;
-    class operator >(var AIterator: ICombineIterator; ACombinator: TSelfType): IIteratorType; inline;
+    class operator >(AIterator: ICombineIterator; var ACombinator: TSelfType): IIteratorType; inline;
   end;
+}
 
 implementation
 
@@ -177,6 +181,13 @@ constructor TIteratorIterator.Create(AIterator: IIteratorType);
 begin
   inherited Create;
   FIterator := AIterator;
+end;
+
+function TIteratorIterator.Source(AIterator:IIteratorType):specialize IIterator<
+  T>;
+begin
+  FIterator := AIterator;
+  Result := Self;
 end;
 
 { TLookAheadIterator }
@@ -260,9 +271,10 @@ begin
   Result := FHead <= High(FData);
 end;
 
+{
 { TIteratorCombinator }
 
-function TIteratorCombinator.Combine(AIterator: ICombineIterator
+function TIteratorCombinator.Source(AIterator: ICombineIterator
   ): IIteratorType;
 begin
   if not Assigned(FIterator) then
@@ -288,14 +300,15 @@ end;
 class operator TIteratorCombinator.<(var ACombinator: TSelfType;
   AIterator: ICombineIterator): IIteratorType;
 begin
-  Result := ACombinator.Combine(AIterator);
+  Result := ACombinator.Source(AIterator);
 end;
 
-class operator TIteratorCombinator.>(var AIterator: ICombineIterator;
-  ACombinator: TSelfType): IIteratorType;
+class operator TIteratorCombinator.>(AIterator: ICombineIterator;
+  var ACombinator: TSelfType): IIteratorType;
 begin
-  Result := ACombinator.Combine(AIterator);
+  Result := ACombinator.Source(AIterator);
 end;
+}
 
 end.
 

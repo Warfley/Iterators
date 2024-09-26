@@ -5,7 +5,11 @@ program iteratortest_implicit;
 {$ModeSwitch ImplicitFunctionSpecialization}
 
 uses
-  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, TupleTypes;
+  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, TupleTypes
+
+  {$IfDef WINDOWS} // Utf8 support
+  , windows
+  {$EndIf};
 
 var
   Data: Array of Integer = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -17,6 +21,38 @@ begin
   Write('Testing Iterate over Array:');
   for i in Iterate(Data) do
     Write(' ', i);
+  WriteLn;
+end;
+
+procedure IterateRangeTest;
+var
+  i: Integer;
+begin
+  Write('Testing Iterate over Range [0..10]:');
+  for i in IterateRange(0, 10) do
+    Write(' ', i);
+  WriteLn;
+end; 
+
+procedure IterateRangeStepTest;
+var
+  d: Double;
+begin
+  Write('Testing Iterate over Range [0..10] in steps of 0.5:');
+  for d in IterateRange(0., 10., 0.5) do
+    Write(' ', FloatToStr(d));
+  WriteLn;
+end;
+
+procedure IterateCharsTest;
+const
+  TestString = 'Hello World';
+var
+  c: Char;
+begin
+  Write('Testing iterating chars of "' + TestString + '":');
+  for c in Iterate(TestString) do
+    Write(' ', c);
   WriteLn;
 end;
 
@@ -99,6 +135,29 @@ begin
   WriteLn;
 end;
 
+procedure IteratorCombinatorTest;
+
+function sq(a: Integer): Integer;
+begin
+  Result := a*a;
+end;
+
+function isEven(a: Integer): Boolean;
+begin
+  Result := a mod 2 = 0;
+end;
+    
+var
+  i: Integer;
+begin
+  Write('Testing Iterator Combination Map < Filter < Range 0..10:');
+  for i in Map<Integer, Integer>(sq,
+           Filter(isEven,
+           IterateRange<Integer>(0, 10))) do
+     Write(' ', i);
+  WriteLn;
+end;
+
 procedure IndexTest;
 var
   p: TPair<SizeInt, Integer>;
@@ -106,7 +165,7 @@ var
   val: Integer;
 begin
   Write('Testing Index:');
-  for p in Index(Iterate(Data)) do
+  for p in Index<Integer>(Iterate<Integer>(Data)) do
   begin
     p.unpack(idx, val);
     Write(' Data[%d]=%d'.Format([idx, val]));
@@ -119,7 +178,7 @@ var
   i: Integer;
 begin
   Write('Testing Step 3:');
-  for i in Step(Iterate(Data), 3) do
+  for i in Step<Integer>(3, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -129,7 +188,7 @@ var
   i: Integer;
 begin
   Write('Testing Reverse:');
-  for i in Reverse(Iterate(Data)) do
+  for i in Reverse<Integer>(Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -140,7 +199,7 @@ var
   arr: Array of String = ['Banana', 'Apple', 'Cherry'];
 begin
   Write('Testing Sort Banana, Apple, Cherry:');
-  for s in Sorted(Iterate(arr), CompareStr) do
+  for s in Sorted<String>(CompareStr, Iterate<String>(arr)) do
     Write(' ', s);
   WriteLn;
 end;
@@ -155,7 +214,7 @@ var
   i: Integer;
 begin
   Write('Testing Filter isEven:');
-  for i in Filter(Iterate(Data), isEven) do
+  for i in Filter<Integer>(isEven, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -163,9 +222,15 @@ end;
 procedure MapTest;
 var
   s: String;
+
+// Implicit conversion doesn't work with overloaded functions
+function Int2Hex(i: Integer): String;
+begin
+  Result := IntToHex(i);
+end;
 begin
   Write('Testing Map inttohex:');
-  for s in Map(Iterate(Data), IntToHex) do
+  for s in Map<Integer, String>(Int2Hex, Iterate<Integer>(Data)) do
     Write(' ', s);
   WriteLn;
 end;
@@ -175,7 +240,7 @@ var
   i: Integer;
 begin
   Write('Testing Skip 4:');
-  for i in Skip(Iterate(Data), 4) do
+  for i in Skip<Integer>(4, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -185,8 +250,56 @@ var
   i: Integer;
 begin
   Write('Testing Take 4:');
-  for i in Take(Iterate(Data), 4) do
+  for i in Take<Integer>(4, Iterate<Integer>(Data)) do
     Write(' ', i);
+  WriteLn;
+end;
+
+procedure TakeUntilTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil (excluding) aabb in "' + TestString + '":');
+  for c in TakeUntil('aabb', Iterate(TestString)) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure TakeUntilWithSequenceTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil (including) aabb in "' + TestString + '":');
+  for c in TakeUntil('aabb', Iterate(TestString), True) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure TakeUntilNoOccurnaceTest;
+const
+  TestString = 'aabacdaa';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil abcd in "' + TestString + '":');
+  for c in TakeUntil('abcd', Iterate(TestString)) do
+    Write(' ', c);
+  WriteLn;
+end; 
+
+procedure TakeUntilEmptySequence;
+const
+  TestString = 'Print None';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil [] in "' + TestString + '":');
+  for c in TakeUntil('', Iterate(TestString)) do
+    Write(' ', c);
   WriteLn;
 end;
 
@@ -205,7 +318,7 @@ var
   i: Integer;
 begin
   Write('Testing TakeWhile isPrime:');
-  for i in TakeWhile(Iterate(Data), isPrime) do
+  for i in TakeWhile<Integer>(isPrime, Iterate<Integer>(Data)) do
     Write(' ', i);
   WriteLn;
 end;
@@ -215,8 +328,98 @@ var
   i: Integer;
 begin
   Write('Testing SkipWhile isPrime:');
-  for i in SkipWhile(Iterate(Data), isPrime) do
+  for i in SkipWhile<Integer>(isPrime, Iterate<Integer>(Data)) do
     Write(' ', i);
+  WriteLn;
+end;
+
+procedure SkipUntilTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil (excluding) aabb in "' + TestString + '":');
+  for c in SkipUntil<Char>('aabb', Iterate(TestString)) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure SkipUntilWithSequenceTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil (including) aabb in "' + TestString + '":');
+  for c in SkipUntil('aabb', Iterate(TestString), True) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure SkipUntilNoOccurnaceTest;
+const
+  TestString = 'aabacdaa';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil abcd in "' + TestString + '":');
+  for c in SkipUntil('abcd', Iterate(TestString)) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure SkipUntilEmptySequence;
+const
+  TestString = 'Print All';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil [] in "' + TestString + '":');
+  for c in SkipUntil('', Iterate(TestString)) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure TestExpand;
+
+function DoubleExpand(AValue: Integer): IIterator<Integer>;
+begin
+  Result := Iterate<Integer>([AValue, AValue]);
+end;
+
+var
+  i: Integer;
+begin
+  Write('Testing double expand:');
+  for i in Expand<Integer, Integer>(DoubleExpand, Iterate<Integer>(Data)) do
+    Write(' ', i);
+  WriteLn;
+end;
+
+procedure TestExpandArray;
+type
+  TIntArray = array of Integer;
+const
+  Arrays: Array of TIntArray = [[1, 2], [3], [4, 5]];
+var
+  i: Integer;
+begin
+  Write('Testing array expand [[1, 2], [3], [4, 5]]:');
+  for i in ExpandArrays<Integer>(Iterate<TIntArray>(Arrays)) do
+    Write(' ', i);
+  WriteLn;
+end; 
+
+procedure TestExpandStrings;
+const
+  Strings: Array of String = ['Foo', 'Bar', 'Baz'];
+var
+  str: String;
+begin
+  Write('Testing array expand ["Foo", "Bar", "Baz"]:');
+  for str in ExpandStrings(Iterate<String>(Strings)) do
+    Write(' ', str);
   WriteLn;
 end;
 
@@ -231,21 +434,57 @@ end;
 
 begin
   Write('Testing Reduce Add: ');
-  sum := Reduce(Iterate(Data), Add);
+  sum := Reduce<Integer>(Add, Iterate<Integer>(Data));
   WriteLn(sum);
+end; 
+
+procedure SumTest;
+var
+  s: Integer;
+begin
+  Write('Testing Sum: ');
+  s := Sum<Integer>(Iterate<Integer>(Data));
+  WriteLn(s);
+end;  
+
+procedure ProductTest;
+var
+  Prod: Integer;
+begin
+  Write('Testing Product: ');
+  Prod := Product<Integer>(Iterate<Integer>(Data));
+  WriteLn(Prod);
+end;
+
+procedure StringSumTest;
+var
+  s: String;
+begin
+  Write('Testing String Sum "a" "b" "c": ');
+  s := Sum<String>(IterateUTF8('abc'));
+  WriteLn(s);
 end;
 
 procedure CollectStringListTest;
 var
   sl: TStringList;
+
+// Implicit conversion doesn't work with overloaded functions
+function Int2Hex(i: Integer): String;
 begin
-  WriteLn('Teesting Collect as TStringList: ');
-  sl := Collect(Map(Iterate(Data), IntToHex), TStringList.Create);
+  Result := IntToHex(i);
+end;
+begin
+  WriteLn('Teesting Collect as TStringList: ');{
+  sl := Collect<String, TStringList>(
+        Map<Integer, String>(Int2Hex,
+        Iterate<Integer>(Data)));
   try
     WriteLn(sl.Text);
   finally
     sl.Free;
-  end;
+  end;}
+  WriteLn('Does not compile at all with ImplicitSpecialization');
 end;
 
 procedure CastIteratorTest;
@@ -266,6 +505,7 @@ var
   sl: TStringList;
 begin
   Write('Testing Class Cast TObject->TStringList:');
+  {
   lst := contnrs.TObjectList.Create;
   try
     for i:=Low(Data) to High(Data) do
@@ -280,7 +520,8 @@ begin
   finally
     lst.Free;
   end;
-  WriteLn;
+  WriteLn;}
+  WriteLn('Does not work with ImplicitSpecialization (Internal Exception)');
 end;
 
 type
@@ -324,7 +565,7 @@ begin
       else
         lst.Add(TChildClass2.Create(i));
     // Different to IterateObjectListTest, as this uses "as" for casting, resulting in exceptions if types don't match up
-    for c in FilterClass<TBaseClass, TChildClass1>(Iterate(lst)) do
+    for c in FilterClass<TBaseClass, TChildClass1>(Iterate<TBaseClass>(lst)) do
       Write(' ', c.A);
   finally
     lst.Free;
@@ -354,29 +595,229 @@ begin
   WriteLn;
 end;
 
+procedure UTF8Test;
+const
+  TestString = '€$£';
+var
+  c: String;
 begin
+  Write('Testing iterating over "', TestString, '":');
+  for c in IterateUTF8(TestString) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure UTF8FromIteratorTest;
+const
+  TestString = '€$£';
+var
+  c: String;
+begin
+  Write('Testing iterating over "', TestString, '" (iterator):');
+  for c in IterateUTF8(Iterate(TestString)) do
+    Write(' ', c); // Why won't you work on windows?
+  WriteLn;
+end;
+
+procedure SingleCharSplitTest;
+const
+  DelimitedText = 'Slash/Delimited//Text';
+var
+  str: String;
+begin
+  Write('Testing splitting "' + DelimitedText + '":');
+  for str in Split(DelimitedText, '/') do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+procedure SequenceSplitTest;
+const
+  DelimitedText = 'aabaacbabba';
+  Delimiter = 'ab';
+var
+  str: String;
+begin
+  Write('Testing splitting "' + DelimitedText + '" on "' + Delimiter + '":');
+  for str in Split(DelimitedText, Delimiter) do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+procedure SingleCharSplitCharTest;
+const
+  DelimitedText = 'Slash/Delimited//Text';
+var
+  str: String;
+begin
+  Write('Testing splitting (charwise) "' + DelimitedText + '":');
+  for str in Split(Iterate(DelimitedText), '/') do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+procedure SequenceSplitCharTest;
+const
+  DelimitedText = 'aabaacbabba';
+  Delimiter = 'ab';
+var
+  str: String;
+begin
+  Write('Testing splitting (charwise) "' + DelimitedText + '" on "' + Delimiter + '":');
+  for str in Split(Iterate(DelimitedText), Delimiter) do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+procedure SplitAndJoinTestSimple;
+const
+  DelimitedText = 'Slash/Delimited/Text';
+var
+  str: String;
+begin
+  Write('Testing split and join "' + DelimitedText + '": ');
+  str := Join('\', Split(DelimitedText, '/'), False);
+  WriteLn(str);
+end;
+
+procedure SplitAndJoinTestGeom;
+const
+  DelimitedText = 'Slash/Delimited/Text';
+var
+  str: String;
+begin
+  Write('Testing split and join (geometric)"' + DelimitedText + '": ');
+  str := Join('\',
+         Split(DelimitedText, '/'));
+  WriteLn(str);
+end;
+
+procedure JoinCharsTestSimple;
+var
+  s: String;
+begin
+  Write('Testing Char Join "a" "b" "c": ');
+  s := Join(Iterate('abc'), False);
+  WriteLn(s);
+end; 
+
+procedure JoinCharsTestGeometric;
+var
+  s: String;
+begin
+  Write('Testing Char Join (geometric) "a" "b" "c": ');
+  s := Join(Iterate('abc'));
+  WriteLn(s);
+end;   
+
+procedure JoinStringTestSimple;
+var
+  s: String;
+begin
+  Write('Testing String Join "Foo" "Bar" "Baz": ');
+  s := Join(Iterate(['Foo', 'Bar', 'Baz']), False);
+  WriteLn(s);
+end;
+
+procedure JoinStringTestGeometric;
+var
+  s: String;
+begin
+  Write('Testing String Join (geometric) "Foo" "Bar" "Baz": ');
+  s := Join(Iterate(['Foo', 'Bar', 'Baz']));
+  WriteLn(s);
+end;
+
+procedure InBetweenTest;
+const
+  TestText = 'It should find (this) and also (that) but (not this(';
+var
+  str: String;
+begin
+  Write('Testing in between brackets "this" and "that":');
+  for str in InBetween(Iterate(TestText), '(', ')') do
+    Write(' ', str);
+  WriteLn;
+end;
+
+begin
+  {$IfDef WINDOWS}
+  SetConsoleOutputCP(DefaultSystemCodePage);
+  {$EndIf}
+  SetTextCodePage(Output, DefaultSystemCodePage);
+
+  // Base iterators
   IterateArrayTest;
+  IterateRangeTest;
+  IterateRangeStepTest;
+  IterateCharsTest;
   IterateStringListTest;
   IterateListTest;
   IterateGenericListTest;
   IterateObjectListTest;
+
+  // Iterator Combinators
+  IteratorCombinatorTest;
+
+  // Utility functions
   IndexTest;
   ReverseTest;
   SortedTest;
   StepTest;
+
+  // Map & Filter
   FilterTest;
   MapTest;
+
+  // Take & Skip
   TakeTest;
   TakeWhileTest;
+  TakeUntilTest;
+  TakeUntilWithSequenceTest;
+  TakeUntilNoOccurnaceTest;
+  TakeUntilEmptySequence;
   SkipTest;
   SkipWhileTest;
+  SkipUntilTest;
+  SkipUntilWithSequenceTest;
+  SkipUntilNoOccurnaceTest;
+  SkipUntilEmptySequence;
+
+  // Expand
+  TestExpand;
+  TestExpandArray;
+  TestExpandStrings;
+
+  // Reduce & Collect
   ReduceTest;
+  SumTest;
+  ProductTest;
+  StringSumTest;
   CollectStringListTest;
+
+  // Typing
   CastIteratorTest;
   ClassCastIteratorTest;
   FilterClassTest;
   MapClassTest;
 
-  ReadLn;
+  // Strings
+  UTF8Test;
+  UTF8FromIteratorTest;
+  // Splitting
+  SingleCharSplitTest;
+  SequenceSplitTest;  
+  SingleCharSplitCharTest;
+  SequenceSplitCharTest;
+  InBetweenTest;
+  // Joining
+  SplitAndJoinTestSimple;
+  SplitAndJoinTestGeom;
+  JoinCharsTestSimple;
+  JoinCharsTestGeometric;
+  JoinStringTestSimple;
+  JoinStringTestGeometric;
+
+  {$IfDef Windows}ReadLn;{$EndIF}
 end.
 
