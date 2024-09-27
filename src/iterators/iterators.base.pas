@@ -6,7 +6,7 @@ unit iterators.base;
 interface
 
 uses
-  Classes, SysUtils, finalizers;
+  Classes, SysUtils, finalizers, FuncTypes, nullable;
 
 type
   // COM interface for reference counting
@@ -102,6 +102,32 @@ type
     FHead: SizeInt;
   public
     constructor Create(const AArray: TArrayType);
+
+    function GetCurrent: T; override;
+    function MoveNext: Boolean; override;
+  end;
+
+  generic TGeneratorIterator<T> = class(specialize TIterator<T>)
+  public type
+    TGeneratorFunc = specialize TAnyFunction<specialize TNullable<T>>;
+  private
+    FGenerator: TGeneratorFunc;
+    FCurrent: specialize TNullable<T>;
+  public
+    constructor Create(const AFunction: TGeneratorFunc);
+
+    function GetCurrent: T; override;
+    function MoveNext: Boolean; override;
+  end;
+
+  generic TInfiniteGeneratorIterator<T> = class(specialize TIterator<T>)
+  public type
+    TGeneratorFunc = specialize TAnyFunction<T>;
+  private
+    FGenerator: TGeneratorFunc;
+    FCurrent: T;
+  public
+    constructor Create(const AFunction: TGeneratorFunc);
 
     function GetCurrent: T; override;
     function MoveNext: Boolean; override;
@@ -269,6 +295,40 @@ function TArrayIterator.MoveNext: Boolean;
 begin
   Inc(FHead);
   Result := FHead <= High(FData);
+end;
+
+constructor TGeneratorIterator.Create(const AFunction:TGeneratorFunc);
+begin
+  inherited Create;
+  FGenerator := AFunction;
+end;
+
+function TGeneratorIterator.GetCurrent:T;
+begin
+  Result := FCurrent.Value;
+end;
+
+function TGeneratorIterator.MoveNext:Boolean;
+begin
+  FCurrent := FGenerator.apply;
+  Result := FCurrent.HasValue;
+end;
+
+constructor TInfiniteGeneratorIterator.Create(const AFunction:TGeneratorFunc);
+begin
+  inherited Create;
+  FGenerator := AFunction;
+end;
+
+function TInfiniteGeneratorIterator.GetCurrent:T;
+begin
+  Result := FCurrent;
+end;
+
+function TInfiniteGeneratorIterator.MoveNext:Boolean;
+begin
+  FCurrent := FGenerator.apply;
+  Result := True;
 end;
 
 {

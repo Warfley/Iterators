@@ -46,6 +46,7 @@ implementation
 
 constructor TRangeIterator.Create(const AStart, AStop: T);
 begin
+  inherited Create;
   FFirstStep := True;
   FStart := AStart;
   FStop := AStop;

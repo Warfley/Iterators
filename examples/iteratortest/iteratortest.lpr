@@ -5,7 +5,8 @@ program iteratortest;
 {$Codepage UTF8}
 
 uses
-  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, TupleTypes
+  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections,
+  TupleTypes, nullable
 
   {$IfDef WINDOWS} // Utf8 support
   , windows
@@ -132,29 +133,6 @@ begin
   finally
     lst.Free;
   end;
-  WriteLn;
-end;
-
-procedure IteratorCombinatorTest;
-
-function sq(a: Integer): Integer;
-begin
-  Result := a*a;
-end;
-
-function isEven(a: Integer): Boolean;
-begin
-  Result := a mod 2 = 0;
-end;
-    
-var
-  i: Integer;
-begin
-  Write('Testing Iterator Combination Map < Filter < Range 0..10:');
-  for i in Map<Integer, Integer>(sq,
-           Filter<Integer>(isEven,
-           IterateRange<Integer>(0, 10))) do
-     Write(' ', i);
   WriteLn;
 end;
 
@@ -737,6 +715,136 @@ begin
   WriteLn;
 end;
 
+procedure EndlessGeneratorTest;
+var
+  l1, l2: Integer;
+
+function Fib: Integer;
+begin
+  Result := l1 + l2;
+  l1 := l2;
+  l2 := Result;
+end; 
+
+var
+  i: Integer;
+begin
+  l1 := 0;
+  l2 := 1;
+  Write('Generating first 10 fibbonacci numbers:');
+  for i in Take<Integer>(10, GenerateInf<Integer>(Fib)) do
+    Write(' ', i);
+  WriteLn;
+end;
+
+procedure GeneratorTest;
+var
+  f: Text;
+
+function NextLine: TNullable<String>;
+var
+  s: String;
+begin
+  if EOF(f) then
+  begin
+    Result.Clear;
+    Exit;
+  end;
+  ReadLn(f, s);
+  Result := s;
+end;
+
+var
+  ln: String;
+begin
+  AssignFile(f, 'FileReadTest.txt');
+  Reset(f);
+  Write('Reading lines generator from FileReadTest.txt:');
+  for ln in Generate<String>(NextLine) do
+    Write(' ', ln);
+  CloseFile(f);
+  WriteLn;
+end;
+
+procedure IteratorCombinatorTest;
+
+function sq(a: Integer): Integer;
+begin
+  Result := a*a;
+end;
+
+function isEven(a: Integer): Boolean;
+begin
+  Result := a mod 2 = 0;
+end;
+
+var
+  i: Integer;
+begin
+  Write('Testing Iterator Combination Map < Filter < Range 0..10:');
+  for i in Map<Integer, Integer>(sq,
+           Filter<Integer>(isEven,
+           IterateRange<Integer>(0, 10))) do
+     Write(' ', i);
+  WriteLn;
+end;
+
+procedure ComplexCombinationTest;
+var
+  f: Text;
+
+function NextChar: TNullable<Char>;
+var
+  c: Char;
+begin
+  if EOF(f) then
+  begin
+    Result.Clear;
+    Exit;
+  end;
+  Read(f, c);
+  Result := c;
+end;
+
+function CountMap(c: Char; m: TDictionary<Char, Integer>): TDictionary<Char, Integer>;
+begin
+  if m.ContainsKey(c) then
+    m[c] := m[c] + 1
+  else
+    m.Add(c, 1);
+  Result := m;
+end;
+
+type
+  TDict = TDictionary<Char, Integer>;
+  TDictPair = Generics.Collections.TPair<Char, Integer>;
+
+function Greater(lhs, rhs: TDictPair): Boolean;
+begin
+  Result := lhs.Value > rhs.Value;
+end;
+
+var
+  p: TDictPair;
+  m: TDict;
+begin
+  AssignFile(f, 'iteratortest.lpr');
+  Reset(f);
+  m := TDict.Create;
+  WriteLn('Reading iteratortest.lpr for the 5 most used chars: ');
+  try
+    for p in Take<TDictPair>(5,
+             Sorted<TDictPair>(Greater,
+             Iterate<Char, Integer>(
+             FoldR<TDict, Char>(CountMap, m,
+             Generate<Char>(NextChar))))) do
+      WriteLn('  ''', p.Key,''': ', p.Value);
+  finally
+    m.Free;
+    CloseFile(f);
+  end;
+end;
+
 begin
   {$IfDef WINDOWS}
   SetConsoleOutputCP(DefaultSystemCodePage);
@@ -752,9 +860,6 @@ begin
   IterateListTest;
   IterateGenericListTest;
   IterateObjectListTest;
-
-  // Iterator Combinators
-  IteratorCombinatorTest;
 
   // Utility functions
   IndexTest;
@@ -814,6 +919,14 @@ begin
   JoinCharsTestGeometric;
   JoinStringTestSimple;
   JoinStringTestGeometric;
+
+  // Generators
+  EndlessGeneratorTest;
+  GeneratorTest;
+
+  // Iterator Combinators
+  IteratorCombinatorTest;
+  ComplexCombinationTest;
 
   {$IfDef Windows}ReadLn;{$EndIF}
 end.

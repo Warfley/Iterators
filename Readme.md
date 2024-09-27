@@ -122,6 +122,38 @@ It can be tweaked with the option boolean argument, to either grow the array geo
 Theoretically iterators could be used to split tasks amongst multiple threads (See Java parallel streams).
 Currently this is not supported by this library, but is a use case that will be considered for the future.
 
+## Generators
+To ease development of new iterators, the library also provides the ability to create iterators from generating functions, so called generators:
+```pascal
+```
+
+## Combination for practical use cases
+Each of the provided functions alone are useful but the real practical use-cases emerge from combining these functions.
+This allows to solve complex problems by breaking them down into smaller problems that are solvable with these atomic functions.
+
+One practical example would be, in text analysis it might be useful to collect information about the frequency of certain words or characters.
+This library allows easiely to build such functionality with just combining a few of the functions provided here.
+
+Take this example:
+```pascal
+  m := TDict.Create;
+  try
+    for p in Take<TDictPair>(5,
+             Sorted<TDictPair>(Greater,
+             Iterate<Char, Integer>(
+             FoldR<TDict, Char>(CountMap, m,
+             Generate<Char>(NextChar))))) do
+      WriteLn('  ''', p.Key,''': ', p.Value);
+  finally
+    m.Free;
+  end;
+```
+This code creates a generator which reads a file char by char.
+Using a fold a dictionary is created to count the occurances of each character.
+Lastly this dictionary is sorted and the 5 most common characters are printed to the screen.
+
+The full example with all the required helper functions can be found in [the examples](examples/iteratortest/iteratortest.lpr)
+
 ## Notes
 ### Implicit Specialization
 A new feature of FPC is implicit specialization for generic functions. This allows leaving out the generic typing for the functions.
@@ -137,6 +169,8 @@ HexStr := Reduce(ConcatStr,
           Map(ByteToHex,
           Iterate(arr)));
 ```
+Implicit specialization still has some issues, e.g. still does not work correctly with function pointers, but an example on how much the code can be reduced can be found in the [examples](examples/iteratortest/iteratortest_implicit.lpr)
+
 To ease readability, I would also suggest using `{$Mode Delphi}` rather than objFPC, as it does not require the `specialize` keyword:
 ```pascal
 // Mode Delphi:
@@ -172,8 +206,6 @@ Will only introduce a slight overhead, while being much more concise than manual
   for i := 0 to list.Count - 1 do
     arr[i] := list[i]
 ```
-
-
 
 ## Examples
 See `examples/iteratortest` for examples covering all currently available functionalities

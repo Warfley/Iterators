@@ -36,6 +36,23 @@ function IterateUTF8(const AIterator: specialize IIterator<Char>): specialize II
 // Range iterators
 generic function IterateRange<T>(const AStart, AStop: T): specialize IIterator<T>; inline; overload;
 generic function IterateRange<T>(const AStart, AStop, AStep: T): specialize IIterator<T>; inline; overload;
+// Generators
+generic function Generate<T>(
+    AFunction: specialize TFunction<specialize TNullable<T>>
+  ): specialize IIterator<T>; overload; inline;
+generic function Generate<T>(
+    AFunction: specialize TFunctionMethod<specialize TNullable<T>>
+  ): specialize IIterator<T>; overload; inline;
+generic function Generate<T>(
+    AFunction: specialize TFunctionNested<specialize TNullable<T>>
+  ): specialize IIterator<T>; overload; inline;
+
+generic function GenerateInf<T>(AFunction: specialize TFunction<T>
+  ): specialize IIterator<T>; overload; inline;
+generic function GenerateInf<T>(AFunction: specialize TFunctionMethod<T>
+  ): specialize IIterator<T>; overload; inline;
+generic function GenerateInf<T>(AFunction: specialize TFunctionNested<T>
+  ): specialize IIterator<T>; overload; inline;
 
 // Map functions
 generic function Map<TFrom, TTo>(AFunction: specialize TUnaryFunction<TTo, TFrom>;
@@ -470,6 +487,45 @@ end;
 generic function IterateRange<T>(const AStart, AStop, AStep: T): specialize IIterator<T>;
 begin
   Result := specialize TStepRangeIterator<T>.Create(AStart, AStop, AStep);
+end;
+
+generic function Generate<T>(
+    AFunction: specialize TFunction<specialize TNullable<T>>
+  ): specialize IIterator<T>;
+begin
+  Result := specialize TGeneratorIterator<T>.Create(AFunction);
+end;
+
+generic function Generate<T>(
+    AFunction: specialize TFunctionMethod<specialize TNullable<T>>
+  ): specialize IIterator<T>;
+begin
+  Result := specialize TGeneratorIterator<T>.Create(AFunction);
+end;
+
+generic function Generate<T>(
+    AFunction: specialize TFunctionNested<specialize TNullable<T>>
+  ): specialize IIterator<T>;
+begin
+  Result := specialize TGeneratorIterator<T>.Create(AFunction);
+end;
+
+generic function GenerateInf<T>(AFunction: specialize TFunction<T>
+  ): specialize IIterator<T>;
+begin
+  Result := specialize TInfiniteGeneratorIterator<T>.Create(AFunction);
+end;
+
+generic function GenerateInf<T>(AFunction: specialize TFunctionMethod<T>
+  ): specialize IIterator<T>;
+begin
+  Result := specialize TInfiniteGeneratorIterator<T>.Create(AFunction);
+end;
+
+generic function GenerateInf<T>(AFunction: specialize TFunctionNested<T>
+  ): specialize IIterator<T>;
+begin
+  Result := specialize TInfiniteGeneratorIterator<T>.Create(AFunction);
 end;
 
 { Map Functions }
@@ -1435,7 +1491,7 @@ end;
 
 generic function NextOpt<T>(const AIterator: specialize IIterator<T>): specialize TNullable<T>;
 begin
-  Result := nil;
+  Result.Clear;
   if AIterator.MoveNext then
     Result := AIterator.Current;
 end;
@@ -1456,7 +1512,7 @@ end;
 
 generic function LastOpt<T>(const AIterator: specialize IIterator<T>): specialize TNullable<T>;
 begin
-  Result := nil;
+  Result.Clear;
   While AIterator.MoveNext do
     Result := AIterator.Current;
 end;
