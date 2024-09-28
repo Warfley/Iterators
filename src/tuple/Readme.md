@@ -28,7 +28,7 @@ begin
 ```
 
 ## Unpacking
-Tuples allow for unpacking into normal variables with a form of pattern matching, by using the None type from the `NoneType` unit:
+Tuples allow for unpacking into normal variables with a form of pattern matching, by using the `_` placeholder:
 ```pascal
 var
   q: TQuintuple<String, Integer, Double, Integer, String>;
@@ -36,7 +36,7 @@ var
 begin
   ...
   // Unpack the 2nd and 3rd element into i and j
-  q.Unpack(None, i, None, j, None);
+  q.Unpack(_, i, _, j, _);
 ```
 
 See `examples/tupletest` for further information
