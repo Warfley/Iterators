@@ -5,7 +5,7 @@ program iteratortest;
 {$Codepage UTF8}
 
 uses
-  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections,
+  heaptrc, Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections,
   TupleTypes, nullable
 
   {$IfDef WINDOWS} // Utf8 support
@@ -133,6 +133,45 @@ begin
   finally
     lst.Free;
   end;
+  WriteLn;
+end;
+
+procedure IterateStreamTest;
+var
+  ss: TStringStream;
+  c: Char;
+begin
+  ss:=TStringStream.Create('Hello World!');
+  ss.Seek(0, soBeginning);
+  Write('Iterating chars of Hello World Stream:');
+  for c in Iterate<Char>(ss) do
+    Write(' ', c);
+  WriteLn;
+end; 
+
+procedure IterateStreamLinesTest;
+var
+  ln: String;
+begin
+  Write('Iterating lines of FileReadTest.txt:');
+  for ln in IterateLines(TFileStream.Create('FileReadTest.txt', fmOpenRead)) do
+    Write(' ', ln);
+  WriteLn;
+end;
+
+procedure IterateStreamUTF8Test;
+const
+  TestString: String = '€$£';
+var
+  ms: TMemoryStream;
+  c: String;
+begin
+  ms := TMemoryStream.Create;
+  ms.Write(TestString[1], Length(TestString));
+  ms.Seek(0, soBeginning);
+  Write('Testing iterating over "', TestString, '" stream :');
+  for c in IterateUTF8(ms) do
+    Write(' ', c);
   WriteLn;
 end;
 
@@ -790,21 +829,6 @@ begin
 end;
 
 procedure ComplexCombinationTest;
-var
-  f: Text;
-
-function NextChar: TNullable<Char>;
-var
-  c: Char;
-begin
-  if EOF(f) then
-  begin
-    Result.Clear;
-    Exit;
-  end;
-  Read(f, c);
-  Result := c;
-end;
 
 function CountMap(c: Char; m: TDictionary<Char, Integer>): TDictionary<Char, Integer>;
 begin
@@ -828,8 +852,6 @@ var
   p: TDictPair;
   m: TDict;
 begin
-  AssignFile(f, 'iteratortest.lpr');
-  Reset(f);
   m := TDict.Create;
   WriteLn('Reading iteratortest.lpr for the 5 most used chars: ');
   try
@@ -837,11 +859,10 @@ begin
              Sorted<TDictPair>(Greater,
              Iterate<Char, Integer>(
              FoldR<TDict, Char>(CountMap, m,
-             Generate<Char>(NextChar))))) do
+             Iterate<Char>(TFileStream.Create('iteratortest.lpr', fmOpenRead)))))) do
       WriteLn('  ''', p.Key,''': ', p.Value);
   finally
     m.Free;
-    CloseFile(f);
   end;
 end;
 
@@ -860,6 +881,9 @@ begin
   IterateListTest;
   IterateGenericListTest;
   IterateObjectListTest;
+  IterateStreamTest;
+  IterateStreamLinesTest;
+  IterateStreamUTF8Test;
 
   // Utility functions
   IndexTest;

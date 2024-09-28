@@ -70,6 +70,10 @@
         <UnitName Value="Iterators.Range"/>
       </Item>
       <Item>
+        <Filename Value="src\iterators\iterators.streams.pas"/>
+        <UnitName Value="iterators.streams"/>
+      </Item>
+      <Item>
         <Filename Value="src\helpers\finalizers.pas"/>
         <UnitName Value="finalizers"/>
       </Item>

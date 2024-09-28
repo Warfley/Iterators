@@ -104,6 +104,11 @@ function CollectStringGeometric(AIterator: specialize IIterator<Char>): String; 
 function CollectStringLinear(AIterator: specialize IIterator<Char>): String; overload;
 function CollectStringGeometric(AIterator: specialize IIterator<String>): String; overload;
 function CollectStringLinear(AIterator: specialize IIterator<String>): String; overload;
+
+function ValidFirstUTF8Char(FirstChar: Char): Boolean; inline;
+
+function ValidUTF8FollowChar(FollowChar: Char): Boolean; inline;
+function UTF8CodePointLen(FirstChar: Char): Integer; inline;
 implementation
 
 function JoinCollectLinear(AIterator: specialize IIterator<String>;
@@ -277,7 +282,7 @@ begin
 
   FirstChar := FDataString[FPosition];
   if not ValidFirstUTF8Char(FirstChar) then
-    raise EInvalidUTF8Char.CreateFmt('Invalid UTF8 char: %s', [ord(FirstChar)]);
+    raise EInvalidUTF8Char.CreateFmt('Invalid UTF8 char: %d', [ord(FirstChar)]);
 
   CodePointLen := UTF8CodePointLen(FirstChar);
   if FPosition + CodePointLen > Length(FDataString) then
@@ -316,7 +321,7 @@ begin
   FirstChar := IteratorCurrent;
 
   if not ValidFirstUTF8Char(FirstChar) then
-    raise EInvalidUTF8Char.CreateFmt('Invalid UTF8 char: %s', [ord(FirstChar)]);
+    raise EInvalidUTF8Char.CreateFmt('Invalid UTF8 char: %d', [ord(FirstChar)]);
 
   CodePointLen := UTF8CodePointLen(FirstChar);
   SetLength(FCurrent, CodePointLen);
@@ -329,7 +334,7 @@ begin
     begin
       NextChar := IteratorCurrent;
       if not ValidUTF8FollowChar(NextChar) then
-        raise EInvalidUTF8Char.CreateFmt('Invalid UTF8 char: %s', [ord(NextChar)]);
+        raise EInvalidUTF8Char.CreateFmt('Invalid UTF8 char: %d', [ord(NextChar)]);
       FCurrent[i] := NextChar;
     end;
 end;    

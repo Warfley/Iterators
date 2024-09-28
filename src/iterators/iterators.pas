@@ -11,6 +11,7 @@ uses
   iterators.base, iterators.map, iterators.filter, iterators.take,
   iterators.skip, iterators.typing, iterators.ordering, iterators.helper,
   iterators.collector, iterators.strings, iterators.expand, iterators.Range,
+  iterators.streams,
 
   Generics.Collections, TupleTypes, Nullable;
 
@@ -53,6 +54,32 @@ generic function GenerateInf<T>(AFunction: specialize TFunctionMethod<T>
   ): specialize IIterator<T>; overload; inline;
 generic function GenerateInf<T>(AFunction: specialize TFunctionNested<T>
   ): specialize IIterator<T>; overload; inline;
+// Stream iterators
+
+generic function Iterate<T>(AStream: TStream; AOwnsStream: Boolean = True):
+  specialize IIterator<T>; overload; inline;
+
+generic function Iterate<T>(
+  AFunction: specialize TUnaryFunction<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>; overload; inline;
+generic function Iterate<T>(
+  AFunction: specialize TConstUnaryFunction<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>; overload; inline;
+generic function Iterate<T>(
+  AFunction: specialize TUnaryFunctionMethod<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>; overload; inline;
+generic function Iterate<T>(
+  AFunction: specialize TConstUnaryFunctionMethod<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>; overload; inline;
+generic function Iterate<T>(
+  AFunction: specialize TUnaryFunctionNested<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>; overload; inline;
+generic function Iterate<T>(
+  AFunction: specialize TConstUnaryFunctionNested<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>; overload; inline;
+
+function IterateLines(AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<String>; inline;
+function IterateUTF8(AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<String>; overload; inline;
 
 // Map functions
 generic function Map<TFrom, TTo>(AFunction: specialize TUnaryFunction<TTo, TFrom>;
@@ -526,6 +553,66 @@ generic function GenerateInf<T>(AFunction: specialize TFunctionNested<T>
   ): specialize IIterator<T>;
 begin
   Result := specialize TInfiniteGeneratorIterator<T>.Create(AFunction);
+end;
+
+{ Stream iterator }
+
+generic function Iterate<T>(AStream: TStream; AOwnsStream: Boolean = True):
+  specialize IIterator<T>;
+begin
+  Result := specialize TStreamIterator<T>.Create(AStream, AOwnsStream);
+end;
+
+generic function Iterate<T>(
+  AFunction: specialize TUnaryFunction<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>;
+begin
+  Result := specialize TCustomStreamIterator<T>.Create(AStream, AOwnsStream, AFunction);
+end;
+
+generic function Iterate<T>(
+  AFunction: specialize TConstUnaryFunction<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>;
+begin
+  Result := specialize TCustomStreamIterator<T>.Create(AStream, AOwnsStream, AFunction);
+end;
+
+generic function Iterate<T>(
+  AFunction: specialize TUnaryFunctionMethod<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>;
+begin
+  Result := specialize TCustomStreamIterator<T>.Create(AStream, AOwnsStream, AFunction);
+end;
+
+generic function Iterate<T>(
+  AFunction: specialize TConstUnaryFunctionMethod<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>;
+begin
+  Result := specialize TCustomStreamIterator<T>.Create(AStream, AOwnsStream, AFunction);
+end;
+
+generic function Iterate<T>(
+  AFunction: specialize TUnaryFunctionNested<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>;
+begin
+  Result := specialize TCustomStreamIterator<T>.Create(AStream, AOwnsStream, AFunction);
+end;
+
+generic function Iterate<T>(
+  AFunction: specialize TConstUnaryFunctionNested<specialize TNullable<T>, TStream>;
+  AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<T>;
+begin
+  Result := specialize TCustomStreamIterator<T>.Create(AStream, AOwnsStream, AFunction);
+end;
+
+function IterateLines(AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<String>;
+begin
+  Result := TLineStreamIterator.Create(AStream, AOwnsStream);
+end;
+
+function IterateUTF8(AStream: TStream; AOwnsStream: Boolean = True): specialize IIterator<String>;
+begin
+  Result := TUTF8StreamIterator.Create(AStream, AOwnsStream);
 end;
 
 { Map Functions }

@@ -142,7 +142,7 @@ Take this example:
              Sorted<TDictPair>(Greater,
              Iterate<Char, Integer>(
              FoldR<TDict, Char>(CountMap, m,
-             Generate<Char>(NextChar))))) do
+             Iterate<Char>(TFileStream.Create(filename, fmOpenRead)))))) do
       WriteLn('  ''', p.Key,''': ', p.Value);
   finally
     m.Free;
