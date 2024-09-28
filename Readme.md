@@ -125,7 +125,44 @@ Currently this is not supported by this library, but is a use case that will be 
 ## Generators
 To ease development of new iterators, the library also provides the ability to create iterators from generating functions, so called generators:
 ```pascal
+procedure IterateFibbonacci;
+var
+  l1, l2: Integer;
+
+function Fib: Integer;
+begin
+  Result := l1 + l2;
+  l1 := l2;
+  l2 := Result;
+end;
+
+var
+  i: Integer;
+begin
+  for i in GenerateInf<Integer>(Fib) do
+    WriteLn(i);
+end;
 ```
+
+This creates an infinite iterator which will in every iteration call the passed function `Fib` to generate the next value.
+You can also create a finite generator by passing a function that returns a `TNullable<T>` which is null if the iteration is done:
+```pascal
+function ReadLnGenerator: TNullable<String>;
+var
+  s: String;
+begin
+  Result := TNullable<String>.Empty;
+  if EOF then
+    Exit;
+  ReadLn(s);
+  Result := s;
+end;
+
+// Usage
+  for ln in Generate<String>(ReadLnGenerator) do
+    WriteLn(ln);
+```
+This generator will check if STDIN is closed, if not it will read the next user input.
 
 ## Combination for practical use cases
 Each of the provided functions alone are useful but the real practical use-cases emerge from combining these functions.
