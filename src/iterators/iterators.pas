@@ -13,7 +13,7 @@ uses
   iterators.collector, iterators.strings, iterators.expand, iterators.Range,
   iterators.streams,
 
-  Generics.Collections, TupleTypes, Nullable;
+  Generics.Collections, TupleTypes, Nullable, TypeWrappers;
 
 type
   EEndOfIterator = class(Exception);
@@ -24,7 +24,7 @@ generic function Iterate(const AString: String): specialize IIterator<Char>; ove
 generic function Iterate<T>(const AEnumarble: specialize IEnumerable<T>): specialize IIterator<T>; overload; inline;
 // Generics.collections support
 generic function Iterate<T>(const AEnumarble: specialize TEnumerable<T>): specialize IIterator<T>; overload; inline;
-generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>): specialize IIterator<Generics.Collections.specialize TPair<T, U>>;
+generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>): specialize IIterator<specialize TDictPairHelper<T, U>.TPair>;
 // Classic pascal containers
 function Iterate(const AStrings: TStrings): specialize IIterator<String>; overload; inline;
 function Iterate(const AList: Classes.TList): specialize IIterator<Pointer>; overload; inline;
@@ -462,9 +462,9 @@ begin
   Result := specialize TClassEnumeratorIterator<T, specialize TEnumerator<T>>.Create(AEnumarble.GetEnumerator);
 end;
 
-generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>): specialize IIterator<Generics.Collections.specialize TPair<T, U>>;
+generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>): specialize IIterator<specialize TDictPairHelper<T, U>.TPair>;
 begin
-  Result := specialize TClassEnumeratorIterator<Generics.Collections.specialize TPair<T, U>, specialize TDictionary<T, U>.TPairEnumerator>.Create(ADictionairy.GetEnumerator);
+  Result := specialize TClassEnumeratorIterator<specialize TDictPairHelper<T, U>.TPair, specialize TDictionary<T, U>.TPairEnumerator>.Create(ADictionairy.GetEnumerator);
 end;
 
 function Iterate(const AStrings: TStrings): specialize IIterator<String>;

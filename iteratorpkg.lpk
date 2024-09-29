@@ -81,6 +81,10 @@
         <Filename Value="src\helpers\functypes.pas"/>
         <UnitName Value="FuncTypes"/>
       </Item>
+      <Item>
+        <Filename Value="src\helpers\typewrappers.pas"/>
+        <UnitName Value="typewrappers"/>
+      </Item>
     </Files>
     <RequiredPkgs>
       <Item>
